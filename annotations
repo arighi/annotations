@@ -76,30 +76,38 @@ def do_check(args):
     if args.arch is None:
         arg_fail('error: --arch is required with --check')
 
-    # Parse target .config
-    c = KConfig(args.check_file)
+    print(f"check-config: loading annotations from {args.file}")
+    total = good = ret = 0
 
     # Load annotations settings
     a = Annotation(args.file)
+    a_configs = a.search_config(arch=args.arch, flavour=args.flavour).keys()
+
+    # Parse target .config
+    c = KConfig(args.check_file)
+    c_configs = c.config.keys()
 
     # Validate .config against annotations
-    print(f"check-config: loading annotations from {args.file}")
-    total = good = ret = 0
-    for conf in c.config:
+    SKIP_CONFIGS = (
         # CONFIG_VERSION_SIGNATURE is dynamically set during the build
-        if conf == 'CONFIG_VERSION_SIGNATURE':
-            continue
+        'CONFIG_VERSION_SIGNATURE',
         # Allow to use a different version of gcc
-        if conf == 'CONFIG_CC_VERSION_TEXT':
+        'CONFIG_CC_VERSION_TEXT',
+    )
+    for conf in a_configs | c_configs:
+        if conf in SKIP_CONFIGS:
             continue
-        policy = a.config[conf] if conf in a.config else None
-        expected = a.search_config(config=conf, arch=args.arch, flavour=args.flavour)[conf]
-        if expected != c.config[conf]:
-            print(f"check-config: FAIL: ({c.config[conf]} != {expected}): {conf} {policy})")
+        entry = a.search_config(config=conf, arch=args.arch, flavour=args.flavour)
+        expected = entry[conf] if entry else '-'
+        value = c.config[conf] if conf in c.config else '-'
+        if value != expected:
+            policy = a.config[conf] if conf in a.config else 'undefined'
+            print(f"check-config: FAIL: ({value} != {expected}): {conf} {policy})")
             ret = 1
         else:
             good += 1
         total += 1
+
     print(f"check-config: {good}/{total} checks passed -- exit {ret}")
     exit(ret)
 

@@ -219,11 +219,12 @@ class Annotation(Config):
             return self.config[config]
         elif config is not None and arch is not None:
             # Get a specific config option for a specific architecture
-            if 'policy' in self.config[config]:
-                if flavour in self.config[config]['policy']:
-                    return {config: self.config[config]['policy'][flavour]}
-                elif arch in self.config[config]['policy']:
-                    return {config: self.config[config]['policy'][arch]}
+            if config in self.config:
+                if 'policy' in self.config[config]:
+                    if flavour in self.config[config]['policy']:
+                        return {config: self.config[config]['policy'][flavour]}
+                    elif arch in self.config[config]['policy']:
+                        return {config: self.config[config]['policy'][arch]}
         return None
 
     @staticmethod
