@@ -25,14 +25,14 @@ def make_parser():
     parser.add_argument('--config', '-c', action='store',
                         help='Select a specific config option')
 
-    ga = parser.add_argument_group(title='Action').add_mutually_exclusive_group()
+    ga = parser.add_argument_group(title='Action').add_mutually_exclusive_group(required=True)
     ga.add_argument('--query', '-q', action='store_true',
                         help='Query annotations')
     ga.add_argument('--export', '-e', action='store_true',
                         help='Convert annotations to .config format')
     ga.add_argument('--import', '-i', action='store',
                         metavar="FILE", dest='import_file',
-                        help='Convet .config to annotations format')
+                        help='Import a .config into annotations')
     ga.add_argument('--check', '-k', action='store',
                         metavar="FILE", dest='check_file',
                         help='Validate kernel .config with annotations')
