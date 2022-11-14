@@ -111,7 +111,7 @@ def autodetect_annotations(args):
         with open('debian/debian.env', 'rt') as fd:
             args.file = fd.read().rstrip().split('=')[1] + '/config/annotations'
     except:
-        print('error: could not determine DEBDIR, try using: --file/-f')
+        arg_fail('error: could not determine DEBDIR, try using: --file/-f')
 
 def main():
     args = _ARGPARSER.parse_args()

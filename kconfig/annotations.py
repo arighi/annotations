@@ -16,8 +16,8 @@ class Config(object):
         Basic configuration file object
         """
         self.fname = fname
-        self.raw_data = self._load(fname)
-        self.config = self._parse(self.raw_data)
+        raw_data = self._load(fname)
+        self.config = self._parse(raw_data)
 
     def _load(self, fname: str) -> str:
         with open(fname, 'rt') as fd:
@@ -56,6 +56,12 @@ class Annotation(Config):
         self.header = ''
         for line in data.splitlines():
             if re.match(r'^#.*', line):
+                m = re.match(r'^# ARCH: (.*)', line)
+                if m:
+                    self.arch = list(m.group(1).split(' '))
+                m = re.match(r'^# FLAVOUR: (.*)', line)
+                if m:
+                    self.flavour = list(m.group(1).split(' '))
                 self.header += line + "\n"
             else:
                 break
@@ -132,8 +138,30 @@ class Annotation(Config):
                     if arch in self.config[conf]['policy'] and conf not in c.config:
                         self.config[conf]['policy'][flavour] = '-'
 
+    def _compact(self):
+        # Try to remove redundant settings: if the config value of a flavour is
+        # the same as the one of the main arch simply drop it.
+        for conf in self.config:
+            if 'policy' not in self.config[conf]:
+                continue
+            for flavour in self.flavour:
+                if flavour not in self.config[conf]['policy']:
+                    continue
+                m = re.match(r'^(.*?)-(.*)$', flavour)
+                if not m:
+                    continue
+                arch = m.group(1)
+                if arch not in self.config[conf]['policy']:
+                    continue
+                if self.config[conf]['policy'][flavour] == self.config[conf]['policy'][arch]:
+                    del self.config[conf]['policy'][flavour]
+
     def save(self, fname: str):
         """ Save annotations data to the annotation file """
+        # Compact annotations structure
+        self._compact()
+
+        # Save annotations to disk
         with tempfile.NamedTemporaryFile(mode='w+t', delete=False) as tmp:
             # Write header
             tmp.write(self.header + '\n')
