@@ -55,7 +55,8 @@ def do_export(args):
         arg_fail('error: --export requires --arch')
     a = Annotation(args.file)
     conf = a.search_config(config=args.config, arch=args.arch, flavour=args.flavour)
-    print(a.to_config(conf))
+    if conf:
+        print(a.to_config(conf))
 
 def do_import(args):
     # Determine arch and flavour
