@@ -216,7 +216,7 @@ class Annotation(Config):
             return ret
         elif config is not None and arch is None:
             # Get a specific config option for all architectures
-            return self.config[config]
+            return self.config[config] if config in self.config else None
         elif config is not None and arch is not None:
             # Get a specific config option for a specific architecture
             if config in self.config:
