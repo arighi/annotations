@@ -66,7 +66,7 @@ def do_import(args):
     # Merge with the current annotations
     c = KConfig(args.import_file)
     a = Annotation(args.file)
-    a.update(c, args.arch, args.flavour)
+    a.update(c, arch=args.arch, flavour=args.flavour, config=args.config)
 
     # Save back to annotations
     a.save(args.file)
@@ -102,6 +102,8 @@ def do_check(args):
         value = c.config[conf] if conf in c.config else '-'
         if value != expected:
             policy = a.config[conf] if conf in a.config else 'undefined'
+            if 'policy' in policy:
+                policy = f"policy<{policy['policy']}>"
             print(f"check-config: FAIL: ({value} != {expected}): {conf} {policy})")
             ret = 1
         else:

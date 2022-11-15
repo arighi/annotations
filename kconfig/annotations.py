@@ -110,11 +110,15 @@ class Annotation(Config):
                 raise Exception(str(e) + f', line = {line}')
         return config
 
-    def update(self, c: KConfig, arch: str, flavour: str = None):
+    def update(self, c: KConfig, arch: str, flavour: str = None, config: str = None):
         """ Merge configs from a Kconfig object into Annotation object """
 
-        a_configs = self.search_config(arch=arch, flavour=flavour).keys()
-        c_configs = c.config.keys()
+        # Determine if we need to import all configs or a single config
+        if config is None:
+            a_configs = self.search_config(arch=arch, flavour=flavour).keys()
+            c_configs = c.config.keys()
+        else:
+            a_configs = c_configs = {config}
 
         # Import configs from the Kconfig object into Annotations
         if flavour is not None:
