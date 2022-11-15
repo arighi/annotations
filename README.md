@@ -42,3 +42,9 @@ Update annotations file with a new kernel .config for amd64 flavour generic
 ```
 $ annotations -f debian.master/config/annotations --arch amd64 --flavour generic --import build/.config
 ```
+
+TODO
+====
+
+ - Migrate arches and flavours definition to annotations
+ - Automatically migrate from old annotations to new annotations format
