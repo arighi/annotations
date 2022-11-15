@@ -112,31 +112,27 @@ class Annotation(Config):
 
     def update(self, c: KConfig, arch: str, flavour: str = None):
         """ Merge configs from a Kconfig object into Annotation object """
+
+        a_configs = self.search_config(arch=arch, flavour=flavour).keys()
+        c_configs = c.config.keys()
+
+        # Import configs from the Kconfig object into Annotations
         if flavour is not None:
             flavour = arch + f'-{flavour}'
         else:
             flavour = arch
-        # Apply configs from the Kconfig object into Annotations
-        for conf in c.config:
+        for conf in c_configs | a_configs:
+            if conf in c.config:
+                val = c.config[conf]
+            else:
+                val = '-'
             if conf in self.config:
                 if 'policy' in self.config[conf]:
-                    self.config[conf]['policy'][flavour] = c.config[conf]
+                    self.config[conf]['policy'][flavour] = val
                 else:
-                    self.config[conf]['policy'] = {flavour: c.config[conf]}
+                    self.config[conf]['policy'] = {flavour: val}
             else:
-                self.config[conf] = {'policy': {flavour: c.config[conf]}}
-            if flavour != arch:
-                if arch in self.config[conf]['policy']:
-                    if self.config[conf]['policy'][arch] == self.config[conf]['policy'][flavour]:
-                        del self.config[conf]['policy'][flavour]
-        # If flavour is specified override default arch configs with flavour
-        # configs (especially if a flavour disables a config that was enabled
-        # for the arch)
-        if flavour != arch:
-            for conf in self.config:
-                if 'policy' in self.config[conf]:
-                    if arch in self.config[conf]['policy'] and conf not in c.config:
-                        self.config[conf]['policy'][flavour] = '-'
+                self.config[conf] = {'policy': {flavour: val}}
 
     def _compact(self):
         # Try to remove redundant settings: if the config value of a flavour is
