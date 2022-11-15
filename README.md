@@ -14,7 +14,7 @@ Examples
 Show settings for `CONFIG_DEBUG_FS` for master kernel across all the supported
 architectures and flavours:
 ```
-$ annotations -f debian.master/config/annotations --query --config CONFIG_DEBUG_FS
+$ annotations --query --config CONFIG_DEBUG_FS
 {
     "policy": {
         "amd64": "y",
@@ -28,19 +28,18 @@ $ annotations -f debian.master/config/annotations --query --config CONFIG_DEBUG_
 }
 ```
 
-Dump kernel .config for linux-aws, architecture arm64 and flavour generic-64k:
+Dump kernel .config for arm64 and flavour generic-64k:
 ```
-$ annotations -f debian.aws/config/annotations -a arm64 -l generic-64k --export
+$ annotations -a arm64 -l generic-64k --export
 CONFIG_DEBUG_FS=y
 CONFIG_DEBUG_KERNEL=y
 CONFIG_COMPAT=y
 ...
 ```
 
-Update annotations file with a new kernel .config for amd64 flavour generic
-(master kernel):
+Update annotations file with a new kernel .config for amd64 flavour generic:
 ```
-$ annotations -f debian.master/config/annotations --arch amd64 --flavour generic --import build/.config
+$ annotations --arch amd64 --flavour generic --import build/.config
 ```
 
 TODO
