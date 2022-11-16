@@ -152,7 +152,7 @@ class Annotation(Config):
                     continue
                 arch = m.group(1)
                 if arch not in self.config[conf]['policy']:
-                    continue
+                    self.config[conf]['policy'][arch] = self.config[conf]['policy'][flavour]
                 if self.config[conf]['policy'][flavour] == self.config[conf]['policy'][arch]:
                     del self.config[conf]['policy'][flavour]
 
@@ -183,7 +183,7 @@ class Annotation(Config):
                 new_val = self.config[conf]
                 if old_val != new_val:
                     if 'policy' in self.config[conf]:
-                        val = self.config[conf]['policy']
+                        val = dict(sorted(self.config[conf]['policy'].items()))
                         line = f"{conf : <47} policy<{val}>"
                         tmp.write(line + "\n")
                     if 'note' in self.config[conf]:
