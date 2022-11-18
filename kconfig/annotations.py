@@ -110,22 +110,20 @@ class Annotation(Config):
                 raise Exception(str(e) + f', line = {line}')
         return config
 
-    def update(self, c: KConfig, arch: str, flavour: str = None, config: str = None):
+    def update(self, c: KConfig, arch: str, flavour: str = None, configs: list = []):
         """ Merge configs from a Kconfig object into Annotation object """
 
         # Determine if we need to import all configs or a single config
-        if config is None:
-            a_configs = self.search_config(arch=arch, flavour=flavour).keys()
-            c_configs = c.config.keys()
-        else:
-            a_configs = c_configs = {config}
+        if not configs:
+            configs = c.config.keys()
+            configs |= self.search_config(arch=arch, flavour=flavour).keys()
 
         # Import configs from the Kconfig object into Annotations
         if flavour is not None:
             flavour = arch + f'-{flavour}'
         else:
             flavour = arch
-        for conf in c_configs | a_configs:
+        for conf in configs:
             if conf in c.config:
                 val = c.config[conf]
             else:
@@ -152,7 +150,7 @@ class Annotation(Config):
                     continue
                 arch = m.group(1)
                 if arch not in self.config[conf]['policy']:
-                    self.config[conf]['policy'][arch] = self.config[conf]['policy'][flavour]
+                    continue
                 if self.config[conf]['policy'][flavour] == self.config[conf]['policy'][arch]:
                     del self.config[conf]['policy'][flavour]
 
@@ -178,7 +176,7 @@ class Annotation(Config):
             tmp_a = Annotation(fname)
 
             # Only save local differences (preserve includes)
-            for conf in self.config:
+            for conf in sorted(self.config):
                 old_val = tmp_a.config[conf] if conf in tmp_a.config else None
                 new_val = self.config[conf]
                 if old_val != new_val:

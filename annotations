@@ -10,6 +10,13 @@ from kconfig.annotations import Annotation, KConfig
 
 VERSION = '0.1'
 
+SKIP_CONFIGS = (
+    # CONFIG_VERSION_SIGNATURE is dynamically set during the build
+    'CONFIG_VERSION_SIGNATURE',
+    # Allow to use a different version of gcc
+    'CONFIG_CC_VERSION_TEXT',
+)
+
 def make_parser():
     parser = argparse.ArgumentParser(
         description='Manage Ubuntu kernel .config and annotations',
@@ -32,7 +39,10 @@ def make_parser():
                         help='Convert annotations to .config format')
     ga.add_argument('--import', '-i', action='store',
                         metavar="FILE", dest='import_file',
-                        help='Import a .config into annotations')
+                        help='Import a full .config for a specific arch and flavour into annotations')
+    ga.add_argument('--update', '-u', action='store',
+                        metavar="FILE", dest='update_file',
+                        help='Import a partial .config into annotations (only resync configs specified in FILE)')
     ga.add_argument('--check', '-k', action='store',
                         metavar="FILE", dest='check_file',
                         help='Validate kernel .config with annotations')
@@ -59,14 +69,31 @@ def do_export(args):
         print(a.to_config(conf))
 
 def do_import(args):
-    # Determine arch and flavour
     if args.arch is None:
-        arg_fail('error: --arch is required with --import')
+        arg_fail('error: --arch and --flavour are required with --import')
+    if args.flavour is None:
+        arg_fail('error: --arch and --flavour are required with --import')
+    if args.config is not None:
+        arg_fail('error: --config cannot be used with --import (try --update)')
 
     # Merge with the current annotations
-    c = KConfig(args.import_file)
     a = Annotation(args.file)
-    a.update(c, arch=args.arch, flavour=args.flavour, config=args.config)
+    c = KConfig(args.import_file)
+    a.update(c, arch=args.arch, flavour=args.flavour)
+
+    # Save back to annotations
+    a.save(args.file)
+
+def do_update(args):
+    if args.arch is None:
+        arg_fail('error: --arch is required with --update')
+
+    # Merge with the current annotations
+    a = Annotation(args.file)
+    c = KConfig(args.update_file)
+    if args.config is None:
+        configs = list(set(c.config.keys()) - set(SKIP_CONFIGS))
+    a.update(c, arch=args.arch, flavour=args.flavour, configs=configs)
 
     # Save back to annotations
     a.save(args.file)
@@ -88,12 +115,6 @@ def do_check(args):
     c_configs = c.config.keys()
 
     # Validate .config against annotations
-    SKIP_CONFIGS = (
-        # CONFIG_VERSION_SIGNATURE is dynamically set during the build
-        'CONFIG_VERSION_SIGNATURE',
-        # Allow to use a different version of gcc
-        'CONFIG_CC_VERSION_TEXT',
-    )
     for conf in a_configs | c_configs:
         if conf in SKIP_CONFIGS:
             continue
@@ -133,6 +154,8 @@ def main():
         do_export(args)
     elif args.import_file:
         do_import(args)
+    elif args.update_file:
+        do_update(args)
     elif args.check_file:
         do_check(args)
 
