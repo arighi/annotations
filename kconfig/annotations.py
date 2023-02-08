@@ -50,13 +50,17 @@ class Annotation(Config):
     Parse body of annotations file
     """
     def _parse_body(self, data: str):
-        # Skip comments
-        data = re.sub(r'(?m)^\s*#.*\n?', '', data)
-
-        # Convert multiple spaces to single space to simplifly parsing
-        data = re.sub(r'  *', ' ', data)
-
         for line in data.splitlines():
+            # Replace tabs with spaces, squeeze multiple into singles and
+            # remove leading and trailing spaces
+            line = line.replace('\t', ' ')
+            line = re.sub(r' +', ' ', line)
+            line = line.strip()
+
+            # Ignore empty lines and comments
+            if not line or line.startswith('#'):
+                continue
+
             # Handle includes (recursively)
             m = re.match(r'^include\s+"?([^"]*)"?', line)
             if m:
@@ -64,33 +68,38 @@ class Annotation(Config):
                 include_fname = dirname(abspath(self.fname)) + '/' + m.group(1)
                 include_data = self._load(include_fname)
                 self._parse_body(include_data)
-            else:
-                # Handle policy and note lines
-                if re.match(r'.* (policy|note)<', line):
-                    try:
-                        conf = line.split(' ')[0]
-                        if conf in self.config:
-                            entry = self.config[conf]
-                        else:
-                            entry = {'policy': {}}
+                continue
 
-                        match = False
-                        m = re.match(r'.* policy<(.*?)>', line)
-                        if m:
-                            match = True
-                            entry['policy'] |= literal_eval(m.group(1))
+            # Handle policy and note lines
+            if re.match(r'.* (policy|note)<', line):
+                try:
+                    conf = line.split(' ')[0]
+                    if conf in self.config:
+                        entry = self.config[conf]
+                    else:
+                        entry = {'policy': {}}
 
-                        m = re.match(r'.* note<(.*?)>', line)
-                        if m:
-                            entry['oneline'] = match
-                            match = True
-                            entry['note'] = "'" + m.group(1).replace("'", '') + "'"
+                    match = False
+                    m = re.match(r'.* policy<(.*?)>', line)
+                    if m:
+                        match = True
+                        entry['policy'] |= literal_eval(m.group(1))
 
-                        if not match:
-                            raise Exception('syntax error')
-                        self.config[conf] = entry
-                    except Exception as e:
-                        raise Exception(str(e) + f', line = {line}')
+                    m = re.match(r'.* note<(.*?)>', line)
+                    if m:
+                        entry['oneline'] = match
+                        match = True
+                        entry['note'] = "'" + m.group(1).replace("'", '') + "'"
+
+                    if not match:
+                        raise Exception('syntax error')
+                    self.config[conf] = entry
+                except Exception as e:
+                    raise Exception(str(e) + f', line = {line}')
+                continue
+
+            # Invalid line
+            raise Exception(f'invalid line: {line}')
 
     """
     Parse main annotations file, individual config options can be accessed via
@@ -124,11 +133,11 @@ class Annotation(Config):
         # Parse body (handle includes recursively)
         self._parse_body(data)
 
-    def _remove_entry(self, config : str):
+    def _remove_entry(self, config: str):
         if self.config[config]:
             del self.config[config]
 
-    def remove(self, config : str, arch: str = None, flavour: str = None):
+    def remove(self, config: str, arch: str = None, flavour: str = None):
         if config not in self.config:
             return
         if arch is not None:
@@ -142,11 +151,11 @@ class Annotation(Config):
         else:
             self._remove_entry(config)
 
-    def set(self, config : str, arch: str = None, flavour: str = None,
-            value : str = None, note : str = None):
+    def set(self, config: str, arch: str = None, flavour: str = None,
+            value: str = None, note: str = None):
         if value is not None:
             if config not in self.config:
-                self.config[config] = { 'policy': {} }
+                self.config[config] = {'policy': {}}
             if arch is not None:
                 if flavour is not None:
                     flavour = f'{arch}-{flavour}'
@@ -253,6 +262,17 @@ class Annotation(Config):
                 if not self.config[conf]['policy']:
                     del self.config[conf]
 
+    def _sorted(self, config):
+        """ Sort configs alphabetically but return configs with a note first """
+        w_note = []
+        wo_note = []
+        for c in sorted(config):
+            if 'note' in config[c]:
+                w_note.append(c)
+            else:
+                wo_note.append(c)
+        return w_note + wo_note
+
     def save(self, fname: str):
         """ Save annotations data to the annotation file """
         # Compact annotations structure
@@ -275,26 +295,36 @@ class Annotation(Config):
             tmp_a = Annotation(fname)
 
             # Only save local differences (preserve includes)
-            for conf in sorted(self.config):
-                old_val = tmp_a.config[conf] if conf in tmp_a.config else None
+            marker = False
+            for conf in self._sorted(self.config):
                 new_val = self.config[conf]
+                if 'policy' not in new_val:
+                    continue
+
                 # If new_val is a subset of old_val, skip it
-                if old_val and 'policy' in old_val and 'policy' in new_val:
+                old_val = tmp_a.config.get(conf)
+                if old_val and 'policy' in old_val:
                     if old_val['policy'] == old_val['policy'] | new_val['policy']:
                         continue
-                if 'policy' in new_val:
-                    val = dict(sorted(new_val['policy'].items()))
-                    line = f"{conf : <47} policy<{val}>"
-                    if 'note' in new_val:
-                        val = new_val['note']
-                        if new_val.get('oneline', False):
-                            # Single line
-                            line += f' note<{val}>'
-                        else:
-                            # Separate policy and note lines,
-                            # followed by an empty line
-                            line += f'\n{conf : <47} note<{val}>\n'
-                    tmp.write(line + "\n")
+
+                # Write out the policy (and note) line(s)
+                val = dict(sorted(new_val['policy'].items()))
+                line = f"{conf : <47} policy<{val}>"
+                if 'note' in new_val:
+                    val = new_val['note']
+                    if new_val.get('oneline', False):
+                        # Single line
+                        line += f' note<{val}>'
+                    else:
+                        # Separate policy and note lines,
+                        # followed by an empty line
+                        line += f'\n{conf : <47} note<{val}>\n'
+                elif not marker:
+                    # Write out a marker indicating the start of annotations
+                    # without notes
+                    tmp.write('\n# ---- Annotations without notes ----\n\n')
+                    marker = True
+                tmp.write(line + "\n")
 
             # Replace annotations with the updated version
             tmp.flush()
@@ -316,7 +346,7 @@ class Annotation(Config):
             # Get config options of a specific architecture
             ret = {}
             for c in self.config:
-                if not 'policy' in self.config[c]:
+                if 'policy' not in self.config[c]:
                     continue
                 if flavour in self.config[c]['policy']:
                     ret[c] = self.config[c]['policy'][flavour]
