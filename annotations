@@ -8,8 +8,9 @@ sys.dont_write_bytecode = True
 import os
 import argparse
 import json
-from kconfig.annotations import Annotation, KConfig
 from signal import signal, SIGPIPE, SIG_DFL
+
+from kconfig.annotations import Annotation, KConfig
 
 VERSION = '0.1'
 
@@ -76,7 +77,7 @@ _ARGPARSER = make_parser()
 def arg_fail(message):
     print(message)
     _ARGPARSER.print_usage()
-    exit(1)
+    sys.exit(1)
 
 
 def print_result(config, res):
@@ -96,7 +97,8 @@ def do_query(args):
 def do_autocomplete(args):
     a = Annotation(args.file)
     res = (c.removeprefix('CONFIG_') for c in a.search_config())
-    print('complete -W "{}" annotations'.format(' '.join(res)))
+    res_str = ' '.join(res)
+    print(f'complete -W "{res_str}" annotations')
 
 
 def do_source(args):
@@ -104,7 +106,7 @@ def do_source(args):
         arg_fail('error: --source requires --config')
     if not os.path.exists('tags'):
         print('tags not found in the current directory, try: `make tags`')
-        exit(1)
+        sys.exit(1)
     os.system(f'vim -t {args.config}')
 
 
@@ -221,7 +223,7 @@ def do_check(args):
         total += 1
 
     print(f"check-config: {good}/{total} checks passed -- exit {ret}")
-    exit(ret)
+    sys.exit(ret)
 
 
 def autodetect_annotations(args):
@@ -230,9 +232,9 @@ def autodetect_annotations(args):
     # If --file/-f isn't specified try to automatically determine the right
     # location of the annotations file looking at debian/debian.env.
     try:
-        with open('debian/debian.env', 'rt') as fd:
+        with open('debian/debian.env', 'rt', encoding='utf-8') as fd:
             args.file = fd.read().rstrip().split('=')[1] + '/config/annotations'
-    except Exception:
+    except (FileNotFoundError, IndexError):
         arg_fail('error: could not determine DEBDIR, try using: --file/-f')
 
 
