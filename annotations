@@ -28,6 +28,7 @@ SKIP_CONFIGS = (
     'CONFIG_BINDGEN_VERSION_TEXT',
 )
 
+
 def make_parser():
     parser = argparse.ArgumentParser(
         description='Manage Ubuntu kernel .config and annotations',
@@ -68,17 +69,21 @@ def make_parser():
                     help='Validate kernel .config with annotations')
     return parser
 
+
 _ARGPARSER = make_parser()
+
 
 def arg_fail(message):
     print(message)
     _ARGPARSER.print_usage()
     exit(1)
 
+
 def print_result(config, res):
     if res is not None and config not in res:
         res = {config or '*': res}
     print(json.dumps(res, indent=4))
+
 
 def do_query(args):
     if args.arch is None and args.flavour is not None:
@@ -87,10 +92,12 @@ def do_query(args):
     res = a.search_config(config=args.config, arch=args.arch, flavour=args.flavour)
     print_result(args.config, res)
 
+
 def do_autocomplete(args):
     a = Annotation(args.file)
     res = (c.removeprefix('CONFIG_') for c in a.search_config())
     print('complete -W "{}" annotations'.format(' '.join(res)))
+
 
 def do_source(args):
     if args.config is None:
@@ -99,6 +106,7 @@ def do_source(args):
         print('tags not found in the current directory, try: `make tags`')
         exit(1)
     os.system(f'vim -t {args.config}')
+
 
 def do_note(args):
     if args.config is None:
@@ -115,6 +123,7 @@ def do_note(args):
     a = Annotation(args.file)
     res = a.search_config(config=args.config)
     print_result(args.config, res)
+
 
 def do_write(args):
     if args.config is None:
@@ -135,6 +144,7 @@ def do_write(args):
     res = a.search_config(config=args.config)
     print_result(args.config, res)
 
+
 def do_export(args):
     if args.arch is None:
         arg_fail('error: --export requires --arch')
@@ -142,6 +152,7 @@ def do_export(args):
     conf = a.search_config(config=args.config, arch=args.arch, flavour=args.flavour)
     if conf:
         print(a.to_config(conf))
+
 
 def do_import(args):
     if args.arch is None:
@@ -159,6 +170,7 @@ def do_import(args):
     # Save back to annotations
     a.save(args.file)
 
+
 def do_update(args):
     if args.arch is None:
         arg_fail('error: --arch is required with --update')
@@ -173,6 +185,7 @@ def do_update(args):
 
     # Save back to annotations
     a.save(args.file)
+
 
 def do_check(args):
     # Determine arch and flavour
@@ -210,6 +223,7 @@ def do_check(args):
     print(f"check-config: {good}/{total} checks passed -- exit {ret}")
     exit(ret)
 
+
 def autodetect_annotations(args):
     if args.file:
         return
@@ -220,6 +234,7 @@ def autodetect_annotations(args):
             args.file = fd.read().rstrip().split('=')[1] + '/config/annotations'
     except Exception:
         arg_fail('error: could not determine DEBDIR, try using: --file/-f')
+
 
 def main():
     # Prevent broken pipe errors when showing output in pipe to other tools
@@ -251,6 +266,7 @@ def main():
         do_source(args)
     else:
         do_query(args)
+
 
 if __name__ == '__main__':
     main()

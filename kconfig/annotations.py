@@ -10,6 +10,7 @@ import tempfile
 from ast import literal_eval
 from os.path import dirname, abspath
 
+
 class Config(object):
     def __init__(self, fname: str, arch: str = None, flavour: str = None):
         """
@@ -28,6 +29,7 @@ class Config(object):
         """ Return a JSON representation of the config """
         return json.dumps(self.config, indent=4)
 
+
 class KConfig(Config):
     """
     Parse a .config file, individual config options can be accessed via
@@ -44,6 +46,7 @@ class KConfig(Config):
             if m:
                 self.config[m.group(1)] = literal_eval("'" + m.group(2) + "'")
                 continue
+
 
 class Annotation(Config):
     """
