@@ -5,7 +5,7 @@ all:  lint
 lint: flake8 pylint
 
 flake8:
-	flake8 annotations .
+	flake8 sanitize-annotations annotations .
 
 pylint:
-	pylint annotations kconfig
+	pylint sanitize-annotations annotations kconfig
