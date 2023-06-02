@@ -342,7 +342,11 @@ class Annotation(Config):
                 # new notes that are different than the old ones.
                 old_val = tmp_a.config.get(conf)
                 if old_val and 'policy' in old_val:
-                    if old_val['policy'] == old_val['policy'] | new_val['policy']:
+                    try:
+                        can_skip = old_val['policy'] == old_val['policy'] | new_val['policy']
+                    except TypeError:
+                        can_skip = old_val['policy'] == {**old_val['policy'], **new_val['policy']}
+                    if can_skip:
                         if 'note' not in new_val:
                             continue
                         if 'note' in old_val and 'note' in new_val:
