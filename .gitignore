@@ -3,3 +3,4 @@ __pycache__
 build
 dist
 .mypy_cache
+annotations.egg-info/
