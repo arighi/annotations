@@ -4,11 +4,10 @@ build
 dist
 .mypy_cache
 annotations.egg-info/
+annotations-prompt
 .pybuild/
 debian/.debhelper/
-debian/annotations.postinst.debhelper
-debian/annotations.prerm.debhelper
-debian/annotations.substvars
+debian/annotations.*
 debian/annotations/
 debian/debhelper-build-stamp
 debian/files
