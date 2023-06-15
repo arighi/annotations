@@ -5,7 +5,7 @@ all:  lint
 lint: flake8 pylint
 
 flake8:
-	flake8 sanitize-annotations annotations .
+	flake8 bin/sanitize-annotations kconfig/run.py kconfig/annotations.py kconfig/version.py .
 
 pylint:
-	pylint sanitize-annotations annotations kconfig
+	pylint bin/sanitize-annotations kconfig
