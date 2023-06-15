@@ -1,8 +1,17 @@
 #!/usr/bin/env python3
 
 import os
+import subprocess
 from setuptools import setup
 from kconfig.version import VERSION
+from setuptools.command.build_py import build_py
+
+
+class BuildPy(build_py):
+    def run(self):
+        subprocess.check_call(["make"])
+        build_py.run(self)
+
 
 setup(
     name="annotations",
@@ -22,6 +31,9 @@ setup(
         "console_scripts": [
             "annotations = kconfig.run:main",
         ]
+    },
+    cmdclass={
+        "build_py": BuildPy,
     },
     scripts=[
         "bin/sanitize-annotations",
