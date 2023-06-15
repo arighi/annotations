@@ -183,3 +183,9 @@ TODO
    the list of supported arches and flavours), but arches and flavours
    are still defined elsewhere, ideally we would like to have arches and
    flavours defined only in one place: annotations.
+
+See also
+========
+
+ - https://lists.ubuntu.com/archives/kernel-team/2023-June/140230.html
+ - https://discourse.ubuntu.com/t/kernel-configuration-in-ubuntu/35857
