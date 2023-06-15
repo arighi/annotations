@@ -17,6 +17,7 @@ setup(
                                        'README.rst'), 'r').read(),
     long_description_content_type="text/x-rts",
     packages=['kconfig'],
+    install_requires=['argcomplete'],
     entry_points = {
         'console_scripts': [
             'annotations = kconfig.run:main',

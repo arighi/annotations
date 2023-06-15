@@ -9,6 +9,7 @@ import os
 import argparse
 import json
 from signal import signal, SIGPIPE, SIG_DFL
+from argcomplete import autocomplete
 
 from kconfig.annotations import Annotation, KConfig
 
@@ -244,6 +245,7 @@ def main():
     signal(SIGPIPE, SIG_DFL)
 
     # Main annotations program
+    autocomplete(_ARGPARSER)
     args = _ARGPARSER.parse_args()
     autodetect_annotations(args)
 

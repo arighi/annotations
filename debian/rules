@@ -1,4 +1,12 @@
 #!/usr/bin/make -f
 
+annotations-prompt:
+	register-python-argcomplete annotations > $@
+
 %:
 	dh $@ --with python3 --buildsystem=pybuild
+
+override_dh_install: annotations-prompt
+	dh_install
+	mkdir -p $(CURDIR)/debian/annotations/etc/bash_completion.d
+	install -m 0644 annotations-prompt $(CURDIR)/debian/annotations/etc/bash_completion.d/annotations-prompt
