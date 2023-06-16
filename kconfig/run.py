@@ -11,8 +11,9 @@ from signal import signal, SIGPIPE, SIG_DFL
 from argcomplete import autocomplete
 
 from kconfig.annotations import Annotation, KConfig
+from kconfig.utils import autodetect_annotations, arg_fail
+from kconfig.version import VERSION
 
-VERSION = "0.1"
 
 SKIP_CONFIGS = (
     # CONFIG_VERSION_SIGNATURE is dynamically set during the build
@@ -117,13 +118,6 @@ def make_parser():
 _ARGPARSER = make_parser()
 
 
-def arg_fail(message, show_usage=True):
-    print(message)
-    if show_usage:
-        _ARGPARSER.print_usage()
-    sys.exit(1)
-
-
 def print_result(config, res):
     if res is not None and config not in res:
         res = {config or "*": res}
@@ -132,7 +126,7 @@ def print_result(config, res):
 
 def do_query(args):
     if args.arch is None and args.flavour is not None:
-        arg_fail("error: --flavour requires --arch")
+        arg_fail(_ARGPARSER, "error: --flavour requires --arch")
     a = Annotation(args.file)
     res = a.search_config(config=args.config, arch=args.arch, flavour=args.flavour)
     print_result(args.config, res)
@@ -147,7 +141,7 @@ def do_autocomplete(args):
 
 def do_source(args):
     if args.config is None:
-        arg_fail("error: --source requires --config")
+        arg_fail(_ARGPARSER, "error: --source requires --config")
     if not os.path.exists("tags"):
         print("tags not found in the current directory, try: `make tags`")
         sys.exit(1)
@@ -156,7 +150,7 @@ def do_source(args):
 
 def do_note(args):
     if args.config is None:
-        arg_fail("error: --note requires --config")
+        arg_fail(_ARGPARSER, "error: --note requires --config")
 
     # Set the note in annotations
     a = Annotation(args.file)
@@ -173,7 +167,7 @@ def do_note(args):
 
 def do_write(args):
     if args.config is None:
-        arg_fail("error: --write requires --config")
+        arg_fail(_ARGPARSER, "error: --write requires --config")
 
     # Set the value in annotations ('null' means remove)
     a = Annotation(args.file)
@@ -199,7 +193,7 @@ def do_write(args):
 
 def do_export(args):
     if args.arch is None:
-        arg_fail("error: --export requires --arch")
+        arg_fail(_ARGPARSER, "error: --export requires --arch")
     a = Annotation(args.file)
     conf = a.search_config(config=args.config, arch=args.arch, flavour=args.flavour)
     if conf:
@@ -208,11 +202,13 @@ def do_export(args):
 
 def do_import(args):
     if args.arch is None:
-        arg_fail("error: --arch is required with --import")
+        arg_fail(_ARGPARSER, "error: --arch is required with --import")
     if args.flavour is None:
-        arg_fail("error: --flavour is required with --import")
+        arg_fail(_ARGPARSER, "error: --flavour is required with --import")
     if args.config is not None:
-        arg_fail("error: --config cannot be used with --import (try --update)")
+        arg_fail(
+            _ARGPARSER, "error: --config cannot be used with --import (try --update)"
+        )
 
     # Merge with the current annotations
     a = Annotation(args.file)
@@ -225,7 +221,7 @@ def do_import(args):
 
 def do_update(args):
     if args.arch is None:
-        arg_fail("error: --arch is required with --update")
+        arg_fail(_ARGPARSER, "error: --arch is required with --update")
 
     # Merge with the current annotations
     a = Annotation(args.file)
@@ -242,7 +238,7 @@ def do_update(args):
 def do_check(args):
     # Determine arch and flavour
     if args.arch is None:
-        arg_fail("error: --arch is required with --check")
+        arg_fail(_ARGPARSER, "error: --arch is required with --check")
 
     print(f"check-config: loading annotations from {args.file}")
     total = good = ret = 0
@@ -276,20 +272,6 @@ def do_check(args):
     sys.exit(ret)
 
 
-def autodetect_annotations(args):
-    if args.file:
-        return
-    # If --file/-f isn't specified try to automatically determine the right
-    # location of the annotations file looking at debian/debian.env.
-    try:
-        with open("debian/debian.env", "rt", encoding="utf-8") as fd:
-            args.file = fd.read().rstrip().split("=")[1] + "/config/annotations"
-    except (FileNotFoundError, IndexError):
-        arg_fail(
-            "error: could not determine DEBDIR, try using: --file/-f", show_usage=False
-        )
-
-
 def main():
     # Prevent broken pipe errors when showing output in pipe to other tools
     # (less for example)
@@ -298,7 +280,15 @@ def main():
     # Main annotations program
     autocomplete(_ARGPARSER)
     args = _ARGPARSER.parse_args()
-    autodetect_annotations(args)
+
+    if args.file is None:
+        args.file = autodetect_annotations()
+        if args.file is None:
+            arg_fail(
+                _ARGPARSER,
+                "error: could not determine DEBDIR, try using: --file/-f",
+                show_usage=False,
+            )
 
     if args.config and not args.config.startswith("CONFIG_"):
         args.config = "CONFIG_" + args.config

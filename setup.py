@@ -20,7 +20,7 @@ class LintCommand(Command):
     def run(self):
         for cmd in ("flake8", "pylint"):
             command = [cmd]
-            for pattern in ("*.py", "kconfig/*.py", "bin/*"):
+            for pattern in ("*.py", "kconfig/*.py"):
                 command += glob(pattern)
             subprocess.call(command)
 
@@ -34,7 +34,7 @@ setup(
     url="https://git.launchpad.net/~arighi/+git/annotations-tools",
     license="GPLv2",
     long_description=open(  # pylint: disable=consider-using-with
-        os.path.join(os.path.dirname(__file__), "README.rst"),
+        os.path.join(os.path.dirname(__file__), "README.md"),
         "r",
         encoding="utf-8",
     ).read(),
@@ -44,14 +44,12 @@ setup(
     entry_points={
         "console_scripts": [
             "annotations = kconfig.run:main",
+            "sanitize-annotations = kconfig.sanitize:main",
         ]
     },
     cmdclass={
         "lint": LintCommand,
     },
-    scripts=[
-        "bin/sanitize-annotations",
-    ],
     include_package_data=True,
     classifiers=[
         "Environment :: Console",

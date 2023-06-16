@@ -22,6 +22,13 @@ apps:
     aliases:
       - annotations
 
+  sanitize:
+    command: bin/sanitize-annotations
+    plugs:
+      - home
+    aliases:
+      - sanitize-annotations
+
 parts:
   annotations:
     build-packages:
