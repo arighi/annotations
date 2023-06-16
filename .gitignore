@@ -11,3 +11,4 @@ debian/annotations.*
 debian/annotations/
 debian/debhelper-build-stamp
 debian/files
+*.snap

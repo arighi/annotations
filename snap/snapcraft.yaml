@@ -1,0 +1,41 @@
+name: annotations
+summary: Tool to manage Ubuntu kernel .config
+description: |
+  This tool allows to store all the kernel .config information into a file called
+  annotations that contains all the Kconfig options for each supported
+  architecture and flavour and (optionally) a short description associated to
+  them. This works only with Ubuntu kernels at the moment.
+license: GPL-3.0
+website: https://github.com/arighi/annotations
+source-code: https://github.com/arighi/annotations
+
+base: core22
+type: app
+adopt-info: annotations
+confinement: strict
+
+apps:
+  annotations:
+    command: bin/annotations
+    plugs:
+      - home
+    aliases:
+      - annotations
+
+parts:
+  annotations:
+    build-packages:
+      - python3
+      - python3-setuptools
+    stage-packages:
+      - python3
+      - python3-argcomplete
+      - python3-pip
+      - python3-wheel
+    plugin: python
+    source: .
+    source-type: git
+    override-pull: |
+        craftctl default
+        craftctl set grade=stable
+        craftctl set version=$(python3 -m kconfig.version)
