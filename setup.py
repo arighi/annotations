@@ -2,15 +2,27 @@
 
 import os
 import subprocess
-from setuptools import setup
+from glob import glob
+from setuptools import setup, Command
 from kconfig.version import VERSION
-from setuptools.command.build_py import build_py
 
 
-class BuildPy(build_py):
+class LintCommand(Command):
+    description = "Run coding style checks"
+    user_options = []
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
     def run(self):
-        subprocess.check_call(["make"])
-        build_py.run(self)
+        for cmd in ("flake8", "pylint"):
+            command = [cmd]
+            for pattern in ("*.py", "kconfig/*.py", "bin/*"):
+                command += glob(pattern)
+            subprocess.call(command)
 
 
 setup(
@@ -21,8 +33,10 @@ setup(
     description="Manage Ubuntu kernel .config",
     url="https://git.launchpad.net/~arighi/+git/annotations-tools",
     license="GPLv2",
-    long_description=open(
-        os.path.join(os.path.dirname(__file__), "README.rst"), "r"
+    long_description=open(  # pylint: disable=consider-using-with
+        os.path.join(os.path.dirname(__file__), "README.rst"),
+        "r",
+        encoding="utf-8",
     ).read(),
     long_description_content_type="text/x-rts",
     packages=["kconfig"],
@@ -33,7 +47,7 @@ setup(
         ]
     },
     cmdclass={
-        "build_py": BuildPy,
+        "lint": LintCommand,
     },
     scripts=[
         "bin/sanitize-annotations",
