@@ -85,10 +85,10 @@ CONFIG_<BAR>                                  policy<{'<ARCH_1>[-<FLAVOUR_1>]': 
 
 ```
 
- - **ARCH**: contains the list of comma-separated values that defines all the
+ - **ARCH**: contains the list of space-separated values that defines all the
    supported architectures for this kernel
 
- - **FLAVOUR**: contains the list of comma-separated values that defines the
+ - **FLAVOUR**: contains the list of space-separated values that defines the
    list of flavours associated to each supported architecture
 
  - **FLAVOUR_DEP**: contains a mapping of `ARCH-FLAVOUR` pairs mapped to a
