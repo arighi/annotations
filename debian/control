@@ -4,15 +4,16 @@ Priority: optional
 Maintainer: Andrea Righi <andrea.righi@canonical.com>
 Standards-Version: 4.5.1
 Build-Depends: debhelper (>= 11), dh-python, python3, python3-setuptools, python3-argcomplete
-Homepage: https://git.launchpad.net/~arighi/+git/annotations-tools
-Vcs-Git:  https://git.launchpad.net/~arighi/+git/annotations-tools
+Homepage: https://github.com/arighi/annotations
+Vcs-Git:  https://github.com/arighi/annotations
 
 Package: annotations
 Architecture: all
 Depends:
  ${misc:Depends},
  ${python3:Depends},
-Description: Manage Ubuntu kernel .config'
- Store all the kernel .config information into a file called "annotations"
- that contains all the Kconfig options for each supported architecture and
- flavour. This works only with Ubuntu kernels at the moment.
+Description: Tool to manage Ubuntu kernel .config
+ This tool allows to store all the kernel .config information into a file
+ called annotations that contains all the Kconfig options for each supported
+ architecture and flavour and (optionally) a short description associated to
+ them. This works only with Ubuntu kernels at the moment.
