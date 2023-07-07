@@ -8,7 +8,13 @@ import os
 import argparse
 import json
 from signal import signal, SIGPIPE, SIG_DFL
-from argcomplete import autocomplete
+
+try:
+    from argcomplete import autocomplete
+except ModuleNotFoundError:
+    # Allow to run this program also when argcomplete is not available
+    def autocomplete(_unused):
+        pass
 
 from kconfig.annotations import Annotation, KConfig
 from kconfig.utils import autodetect_annotations, arg_fail
