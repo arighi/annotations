@@ -268,13 +268,20 @@ def do_check(args):
             policy = a.config[conf] if conf in a.config else "undefined"
             if "policy" in policy:
                 policy = f"policy<{policy['policy']}>"
-            print(f"check-config: FAIL: ({value} != {expected}): {conf} {policy})")
+            print(f"check-config: {conf} changed from {expected} to {value}: {policy})")
             ret = 1
         else:
             good += 1
         total += 1
 
-    print(f"check-config: {good}/{total} checks passed -- exit {ret}")
+    num = total - good
+    if ret:
+        if os.path.exists('.git'):
+            print(f"check-config: {num} config options have been changed, review them with `git diff`")
+        else:
+            print(f"check-config: {num} config options have changed")
+    else:
+        print("check-config: all good")
     sys.exit(ret)
 
 
