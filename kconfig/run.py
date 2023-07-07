@@ -4,6 +4,9 @@
 # Copyright © 2022 Canonical Ltd.
 
 import sys
+
+sys.dont_write_bytecode = True
+
 import os
 import argparse
 import json
@@ -15,6 +18,7 @@ except ModuleNotFoundError:
     # Allow to run this program also when argcomplete is not available
     def autocomplete(_unused):
         pass
+
 
 from kconfig.annotations import Annotation, KConfig
 from kconfig.utils import autodetect_annotations, arg_fail
@@ -276,8 +280,10 @@ def do_check(args):
 
     num = total - good
     if ret:
-        if os.path.exists('.git'):
-            print(f"check-config: {num} config options have been changed, review them with `git diff`")
+        if os.path.exists(".git"):
+            print(
+                f"check-config: {num} config options have been changed, review them with `git diff`"
+            )
         else:
             print(f"check-config: {num} config options have changed")
     else:

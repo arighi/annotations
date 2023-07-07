@@ -5,6 +5,9 @@
 # Copyright © 2023 Canonical Ltd.
 
 import sys
+
+sys.dont_write_bytecode = True  # pylint: disable=E0402
+
 import re
 import argparse
 from argcomplete import autocomplete
