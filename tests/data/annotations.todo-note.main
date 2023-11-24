@@ -1,0 +1,7 @@
+# Menu: HEADER
+# FORMAT: 4
+# ARCH: amd64 arm64 armhf ppc64el riscv64 s390x
+# FLAVOUR: amd64-generic arm64-generic arm64-generic-64k armhf-generic armhf-generic-lpae ppc64el-generic riscv64-generic s390x-generic
+
+CONFIG_ACCESSIBILITY                            policy<{'amd64': 'y', 'arm64': 'y'}>
+CONFIG_ACCESSIBILITY                            note<'this config must be enabled'>

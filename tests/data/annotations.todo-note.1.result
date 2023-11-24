@@ -1,0 +1,27 @@
+{
+    "arch": [
+        "amd64",
+        "arm64"
+    ],
+    "flavour": [
+        "amd64-gcp",
+        "arm64-gcp"
+    ],
+    "flavour_dep": {
+        "amd64-gcp": "amd64-generic",
+        "arm64-gcp": "arm64-generic"
+    },
+    "include": [
+        "annotations.todo-note.main"
+    ],
+    "config": {
+        "CONFIG_ACCESSIBILITY": {
+            "policy": {
+                "amd64": "y",
+                "arm64": "y",
+                "amd64-gcp": "n"
+            },
+            "note": "TODO: update note"
+        }
+    }
+}

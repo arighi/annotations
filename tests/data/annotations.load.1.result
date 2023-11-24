@@ -1,0 +1,14 @@
+{
+  "arch": ["amd64", "armhf"],
+  "flavour": ["amd64-foo", "amd64-bar", "armhf-foo", "armhf-bar"],
+  "config": {
+    "CONFIG_A_1": {
+      "policy": {"amd64": "1", "armhf": "1"},
+      "note": "'Config A_1'"
+    },
+    "CONFIG_B_2": {
+      "policy": {"amd64": "2", "armhf": "2"},
+      "note": "'Config B_2'"
+    }
+  }
+}
