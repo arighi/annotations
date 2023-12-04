@@ -129,8 +129,8 @@ _ARGPARSER = make_parser()
 
 
 def print_result(config, res):
-    if res is not None and config not in res:
-        res = {config or "*": res}
+    if res is not None and config is not None and config not in res:
+        res = {config: res}
     print(json.dumps(res, indent=4))
 
 
@@ -139,6 +139,14 @@ def do_query(args):
         arg_fail(_ARGPARSER, "error: --flavour requires --arch")
     a = Annotation(args.file)
     res = a.search_config(config=args.config, arch=args.arch, flavour=args.flavour)
+    # If no arguments are specified dump the whole annotations structure
+    if args.config is None and args.arch is None and args.flavour is None:
+        res = {
+            "arch": a.arch,
+            "flavour": a.flavour,
+            "flavour_dep": a.flavour_dep,
+            "config": res,
+        }
     print_result(args.config, res)
 
 
