@@ -12,6 +12,8 @@ from abc import abstractmethod
 from ast import literal_eval
 from os.path import dirname, abspath
 
+from kconfig.version import ANNOTATIONS_FORMAT_VERSION
+
 
 class Config:
     def __init__(self, fname):
@@ -131,7 +133,7 @@ class Annotation(Config):
             # Invalid line
             raise SyntaxError(f"invalid line: {line}")
 
-    def _parse(self, data: str):
+    def _legacy_parse(self, data: str):
         """
         Parse main annotations file, individual config options can be accessed
         via self.config[<CONFIG_OPTION>]
@@ -161,6 +163,13 @@ class Annotation(Config):
             else:
                 break
 
+        # Return an error if architectures are not defined
+        if not self.arch:
+            raise SyntaxError(f"ARCH not defined in annotations")
+        # Return an error if flavours are not defined
+        if not self.flavour:
+            raise SyntaxError(f"FLAVOUR not defined in annotations")
+
         # Parse body (handle includes recursively)
         self._parse_body(data)
 
@@ -170,6 +179,51 @@ class Annotation(Config):
                 raise SyntaxError(f"Invalid source flavour in FLAVOUR_DEP: {src}")
             if tgt not in self.include_flavour:
                 raise SyntaxError(f"Invalid target flavour in FLAVOUR_DEP: {tgt}")
+
+    def _json_parse(self, data, is_included=False):
+        data = json.loads(data)
+
+        # Check if version is supported
+        version = data['attributes']['_version']
+        if version > ANNOTATIONS_FORMAT_VERSION:
+                raise SyntaxError(f"annotations format version {version} not supported")
+
+        # Check for top-level annotations vs imported annotations
+        if not is_included:
+            self.config = data['config']
+            self.arch = data['attributes']['arch']
+            self.flavour = data['attributes']['flavour']
+            self.flavour_dep = data['attributes']['flavour_dep']
+            self.include = data['attributes']['include']
+            self.include_flavour = []
+        else:
+            # We are procesing an imported annotations, so merge all the
+            # configs and attributes.
+            try:
+                self.config |= data['config']
+            except TypeError:
+                self.config = {
+                    **self.config,
+                    **data['config']
+                }
+            self.arch = list(set(self.arch) | set(data['attributes']['arch']))
+            self.flavour = list(set(self.flavour) | set(data['attributes']['flavour']))
+            self.include_flavour = list(set(self.include_flavour) | set(data['attributes']['flavour']))
+            self.flavour_dep = list(set(self.flavour_dep) | set(data['attributes']['flavour_dep']))
+
+        # Handle recursive inclusions
+        for f in data['attributes']['include']:
+            include_fname = dirname(abspath(self.fname)) + "/" + f
+            data = self._load(include_fname)
+            self._json_parse(data, is_included=True)
+
+    def _parse(self, data: str):
+        # Try to parse the legacy format first, otherwise use the new JSON
+        # format.
+        try:
+            self._legacy_parse(data)
+        except SyntaxError:
+            self._json_parse(data, is_included=False)
 
     def _remove_entry(self, config: str):
         if self.config[config]:

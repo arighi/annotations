@@ -22,7 +22,7 @@ except ModuleNotFoundError:
 
 from kconfig.annotations import Annotation, KConfig
 from kconfig.utils import autodetect_annotations, arg_fail
-from kconfig.version import VERSION
+from kconfig.version import VERSION, ANNOTATIONS_FORMAT_VERSION
 
 
 SKIP_CONFIGS = (
@@ -127,11 +127,36 @@ def make_parser():
 
 _ARGPARSER = make_parser()
 
+def export_result(data):
+    # Dump metadata / attributes first
+    out = '{\n  "attributes": {\n'
+    for key, value in sorted(data['attributes'].items()):
+        out += f'     "{key}": {json.dumps(value)},\n'
+    out = out.rstrip(',\n')
+    out += '\n  },'
+    print(out)
 
-def print_result(config, res):
-    if res is not None and config is not None and config not in res:
-        res = {config: res}
-    print(json.dumps(res, indent=4))
+    configs_with_note = {key: value for key, value in data['config'].items() if 'note' in value}
+    configs_without_note = {key: value for key, value in data['config'].items() if 'note' not in value}
+
+    # Dump configs, sorted alphabetically, showing items with a note first
+    out = '  "config": {\n'
+    for key in sorted(configs_with_note) + sorted(configs_without_note):
+        policy = data['config'][key]['policy']
+        if 'note' in data['config'][key]:
+            note = data['config'][key]['note']
+            out += f'    "{key}": {{"policy": {json.dumps(policy)}, "note": {json.dumps(note)}}},\n'
+        else:
+            out += f'    "{key}": {{"policy": {json.dumps(policy)}}},\n'
+    out = out.rstrip(',\n')
+    out += '\n  }\n}'
+    print(out)
+
+
+def print_result(config, data):
+    if data is not None and config is not None and config not in data:
+        data = {config: data}
+    print(json.dumps(data, sort_keys=True, indent=2))
 
 
 def do_query(args):
@@ -142,12 +167,18 @@ def do_query(args):
     # If no arguments are specified dump the whole annotations structure
     if args.config is None and args.arch is None and args.flavour is None:
         res = {
-            "arch": a.arch,
-            "flavour": a.flavour,
-            "flavour_dep": a.flavour_dep,
+            "attributes": {
+                "arch": a.arch,
+                "flavour": a.flavour,
+                "flavour_dep": a.flavour_dep,
+                "include": a.include,
+                "_version": ANNOTATIONS_FORMAT_VERSION,
+            },
             "config": res,
         }
-    print_result(args.config, res)
+        export_result(res)
+    else:
+        print_result(args.config, res)
 
 
 def do_autocomplete(args):
