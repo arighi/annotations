@@ -11,6 +11,5 @@ class TestTodoNote(unittest.TestCase):
         a = Annotation("tests/data/annotations.todo-note.1")
         c = KConfig("tests/data/config.todo-note.1")
         a.update(c, arch="amd64", flavour="gcp")
-        print(json.dumps(utils.to_dict(a)))
         r = utils.load_json("tests/data/annotations.todo-note.1.result")
         self.assertEqual(utils.to_dict(a), r)
