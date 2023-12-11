@@ -6,10 +6,10 @@ import sys
 
 sys.dont_write_bytecode = True
 
-import os
-import argparse
-import json
-from signal import signal, SIGPIPE, SIG_DFL
+import os  # noqa: E402 Import not at top of file
+import argparse  # noqa: E402 Import not at top of file
+import json  # noqa: E402 Import not at top of file
+from signal import signal, SIGPIPE, SIG_DFL  # noqa: E402 Import not at top of file
 
 try:
     from argcomplete import autocomplete
@@ -19,9 +19,18 @@ except ModuleNotFoundError:
         pass
 
 
-from kconfig.annotations import Annotation, KConfig
-from kconfig.utils import autodetect_annotations, arg_fail
-from kconfig.version import VERSION, ANNOTATIONS_FORMAT_VERSION
+from kconfig.annotations import (  # noqa: E402 Import not at top of file
+    Annotation,
+    KConfig,
+)
+from kconfig.utils import (  # noqa: E402 Import not at top of file
+    autodetect_annotations,
+    arg_fail,
+)
+from kconfig.version import (  # noqa: E402 Import not at top of file
+    VERSION,
+    ANNOTATIONS_FORMAT_VERSION,
+)
 
 
 SKIP_CONFIGS = (
@@ -116,7 +125,8 @@ def make_parser():
         action="store",
         metavar="FILE",
         dest="update_file",
-        help="Import a partial .config into annotations (only resync configs specified in FILE)",
+        help="Import a partial .config into annotations "
+        "(only resync configs specified in FILE)",
     )
     ga.add_argument(
         "--check",
@@ -154,7 +164,7 @@ def export_result(data):
         policy = data["config"][key]["policy"]
         if "note" in data["config"][key]:
             note = data["config"][key]["note"]
-            out += f'    "{key}": {{"policy": {json.dumps(policy)}, "note": {json.dumps(note)}}},\n'
+            out += f'    "{key}": {{"policy": {json.dumps(policy)}, "note": {json.dumps(note)}}},\n'  # noqa: E501 Line too long
         else:
             out += f'    "{key}": {{"policy": {json.dumps(policy)}}},\n'
     out = out.rstrip(",\n")
@@ -330,7 +340,8 @@ def do_check(args):
     if ret:
         if os.path.exists(".git"):
             print(
-                f"check-config: {num} config options have been changed, review them with `git diff`"
+                f"check-config: {num} config options have been changed, "
+                "review them with `git diff`"
             )
         else:
             print(f"check-config: {num} config options have changed")

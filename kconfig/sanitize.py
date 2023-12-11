@@ -7,12 +7,15 @@ import sys
 
 sys.dont_write_bytecode = True  # pylint: disable=E0402
 
-import re
-import argparse
-from argcomplete import autocomplete
+import re  # noqa: E402 Import not at top of file
+import argparse  # noqa: E402 Import not at top of file
+from argcomplete import autocomplete  # noqa: E402 Import not at top of file
 
-from kconfig.utils import autodetect_annotations, arg_fail
-from kconfig.version import VERSION
+from kconfig.utils import (  # noqa: E402 Import not at top of file
+    autodetect_annotations,
+    arg_fail,
+)
+from kconfig.version import VERSION  # noqa: E402 Import not at top of file
 
 
 def make_parser():

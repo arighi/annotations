@@ -12,9 +12,9 @@ fi
 
 # Create upsteam tag
 deb_tag=$(dpkg-parsechangelog -S version | cut -d- -f1)
-git tag upstream/${deb_tag}
+git tag "upstream/${deb_tag}"
 
-gbp buildpackage --git-ignore-branch $*
+gbp buildpackage --git-ignore-branch "$@"
 
 # Undo packaging changes
-git tag -d upstream/${deb_tag}
+git tag -d "upstream/${deb_tag}"

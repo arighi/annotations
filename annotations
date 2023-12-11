@@ -5,7 +5,6 @@
 # distribution without installing it in the system.
 
 import os
-import sys
 from kconfig import run
 
 

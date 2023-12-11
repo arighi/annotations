@@ -166,10 +166,10 @@ class Annotation(Config):
 
         # Return an error if architectures are not defined
         if not self.arch:
-            raise SyntaxError(f"ARCH not defined in annotations")
+            raise SyntaxError("ARCH not defined in annotations")
         # Return an error if flavours are not defined
         if not self.flavour:
-            raise SyntaxError(f"FLAVOUR not defined in annotations")
+            raise SyntaxError("FLAVOUR not defined in annotations")
 
         # Parse body
         self._parse_body(data)
@@ -224,7 +224,7 @@ class Annotation(Config):
         # format.
         try:
             self._legacy_parse(data)
-        except SyntaxError as e:
+        except SyntaxError:
             self._json_parse(data, is_included=False)
 
     def _remove_entry(self, config: str):
@@ -305,7 +305,8 @@ class Annotation(Config):
                     if val != old_val and "note" in self.config[conf]:
                         self.config[conf]["note"] = "TODO: update note"
                         print(
-                            f"WARNING: {conf} changed from {old_val} to {val}, updating note"
+                            f"WARNING: {conf} changed from {old_val} to {val}, "
+                            "updating note"
                         )
                     self.config[conf]["policy"][flavour] = val
                 else:
