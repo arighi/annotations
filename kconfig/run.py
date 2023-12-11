@@ -3,13 +3,10 @@
 # Copyright © 2022 Canonical Ltd.
 
 import sys
-
-sys.dont_write_bytecode = True
-
-import os  # noqa: E402 Import not at top of file
-import argparse  # noqa: E402 Import not at top of file
-import json  # noqa: E402 Import not at top of file
-from signal import signal, SIGPIPE, SIG_DFL  # noqa: E402 Import not at top of file
+import os
+import argparse
+import json
+from signal import signal, SIGPIPE, SIG_DFL
 
 try:
     from argcomplete import autocomplete
