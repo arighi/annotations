@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # -*- mode: python -*-
 # Try to automatically sanitize an old annotations file, dropping all the
 # deprecated flags, arbitrary enforcements rules, etc.

@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- mode: python -*-
 # Misc helpers for Kconfig and annotations
 # Copyright © 2023 Canonical Ltd.

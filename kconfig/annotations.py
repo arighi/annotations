@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- mode: python -*-
 # python module to manage Ubuntu kernel .config and annotations
 # Copyright © 2022 Canonical Ltd.
