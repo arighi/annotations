@@ -203,7 +203,7 @@ class Annotation(Config):
             # We are procesing an imported annotations, so merge all the
             # configs and attributes.
             try:
-                self.config |= data["config"]
+                self.config = data["config"] | self.config
             except TypeError:
                 self.config = {**self.config, **data["config"]}
             self.arch = list(set(self.arch) | set(data["attributes"]["arch"]))
