@@ -80,6 +80,11 @@ def make_parser():
         action="store_true",
         help="Jump to a config definition in the kernel source code",
     )
+    parser.add_argument(
+        "--no-include",
+        action="store_true",
+        help="Do not process included annotations (stop at the main file)",
+    )
 
     ga = parser.add_argument_group(title="Action").add_mutually_exclusive_group(
         required=False
@@ -127,29 +132,34 @@ def make_parser():
 
 _ARGPARSER = make_parser()
 
+
 def export_result(data):
     # Dump metadata / attributes first
     out = '{\n  "attributes": {\n'
-    for key, value in sorted(data['attributes'].items()):
+    for key, value in sorted(data["attributes"].items()):
         out += f'     "{key}": {json.dumps(value)},\n'
-    out = out.rstrip(',\n')
-    out += '\n  },'
+    out = out.rstrip(",\n")
+    out += "\n  },"
     print(out)
 
-    configs_with_note = {key: value for key, value in data['config'].items() if 'note' in value}
-    configs_without_note = {key: value for key, value in data['config'].items() if 'note' not in value}
+    configs_with_note = {
+        key: value for key, value in data["config"].items() if "note" in value
+    }
+    configs_without_note = {
+        key: value for key, value in data["config"].items() if "note" not in value
+    }
 
     # Dump configs, sorted alphabetically, showing items with a note first
     out = '  "config": {\n'
     for key in sorted(configs_with_note) + sorted(configs_without_note):
-        policy = data['config'][key]['policy']
-        if 'note' in data['config'][key]:
-            note = data['config'][key]['note']
+        policy = data["config"][key]["policy"]
+        if "note" in data["config"][key]:
+            note = data["config"][key]["note"]
             out += f'    "{key}": {{"policy": {json.dumps(policy)}, "note": {json.dumps(note)}}},\n'
         else:
             out += f'    "{key}": {{"policy": {json.dumps(policy)}}},\n'
-    out = out.rstrip(',\n')
-    out += '\n  }\n}'
+    out = out.rstrip(",\n")
+    out += "\n  }\n}"
     print(out)
 
 
@@ -162,7 +172,7 @@ def print_result(config, data):
 def do_query(args):
     if args.arch is None and args.flavour is not None:
         arg_fail(_ARGPARSER, "error: --flavour requires --arch")
-    a = Annotation(args.file)
+    a = Annotation(args.file, do_include=(not args.no_include))
     res = a.search_config(config=args.config, arch=args.arch, flavour=args.flavour)
     # If no arguments are specified dump the whole annotations structure
     if args.config is None and args.arch is None and args.flavour is None:

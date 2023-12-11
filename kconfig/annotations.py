@@ -16,12 +16,13 @@ from kconfig.version import ANNOTATIONS_FORMAT_VERSION
 
 
 class Config:
-    def __init__(self, fname):
+    def __init__(self, fname, do_include=True):
         """
         Basic configuration file object
         """
         self.fname = fname
         self.config = {}
+        self.do_include = do_include
 
         raw_data = self._load(fname)
         self._parse(raw_data)
@@ -91,9 +92,10 @@ class Annotation(Config):
             if m:
                 if parent:
                     self.include.append(m.group(1))
-                include_fname = dirname(abspath(self.fname)) + "/" + m.group(1)
-                include_data = self._load(include_fname)
-                self._parse_body(include_data, parent=False)
+                if self.do_include:
+                    include_fname = dirname(abspath(self.fname)) + "/" + m.group(1)
+                    include_data = self._load(include_fname)
+                    self._parse_body(include_data, parent=False)
                 continue
 
             # Handle policy and note lines
@@ -170,59 +172,60 @@ class Annotation(Config):
         if not self.flavour:
             raise SyntaxError(f"FLAVOUR not defined in annotations")
 
-        # Parse body (handle includes recursively)
+        # Parse body
         self._parse_body(data)
 
         # Sanity check: Verify that all FLAVOUR_DEP flavors are valid
-        for src, tgt in self.flavour_dep.items():
-            if src not in self.flavour:
-                raise SyntaxError(f"Invalid source flavour in FLAVOUR_DEP: {src}")
-            if tgt not in self.include_flavour:
-                raise SyntaxError(f"Invalid target flavour in FLAVOUR_DEP: {tgt}")
+        if self.do_include:
+            for src, tgt in self.flavour_dep.items():
+                if src not in self.flavour:
+                    raise SyntaxError(f"Invalid source flavour in FLAVOUR_DEP: {src}")
+                if tgt not in self.include_flavour:
+                    raise SyntaxError(f"Invalid target flavour in FLAVOUR_DEP: {tgt}")
 
     def _json_parse(self, data, is_included=False):
         data = json.loads(data)
 
         # Check if version is supported
-        version = data['attributes']['_version']
+        version = data["attributes"]["_version"]
         if version > ANNOTATIONS_FORMAT_VERSION:
-                raise SyntaxError(f"annotations format version {version} not supported")
+            raise SyntaxError(f"annotations format version {version} not supported")
 
         # Check for top-level annotations vs imported annotations
         if not is_included:
-            self.config = data['config']
-            self.arch = data['attributes']['arch']
-            self.flavour = data['attributes']['flavour']
-            self.flavour_dep = data['attributes']['flavour_dep']
-            self.include = data['attributes']['include']
+            self.config = data["config"]
+            self.arch = data["attributes"]["arch"]
+            self.flavour = data["attributes"]["flavour"]
+            self.flavour_dep = data["attributes"]["flavour_dep"]
+            self.include = data["attributes"]["include"]
             self.include_flavour = []
         else:
             # We are procesing an imported annotations, so merge all the
             # configs and attributes.
             try:
-                self.config |= data['config']
+                self.config |= data["config"]
             except TypeError:
-                self.config = {
-                    **self.config,
-                    **data['config']
-                }
-            self.arch = list(set(self.arch) | set(data['attributes']['arch']))
-            self.flavour = list(set(self.flavour) | set(data['attributes']['flavour']))
-            self.include_flavour = list(set(self.include_flavour) | set(data['attributes']['flavour']))
-            self.flavour_dep = list(set(self.flavour_dep) | set(data['attributes']['flavour_dep']))
+                self.config = {**self.config, **data["config"]}
+            self.arch = list(set(self.arch) | set(data["attributes"]["arch"]))
+            self.flavour = list(set(self.flavour) | set(data["attributes"]["flavour"]))
+            self.include_flavour = list(
+                set(self.include_flavour) | set(data["attributes"]["flavour"])
+            )
+            self.flavour_dep = self.flavour_dep | data["attributes"]["flavour_dep"]
 
         # Handle recursive inclusions
-        for f in data['attributes']['include']:
-            include_fname = dirname(abspath(self.fname)) + "/" + f
-            data = self._load(include_fname)
-            self._json_parse(data, is_included=True)
+        if self.do_include:
+            for f in data["attributes"]["include"]:
+                include_fname = dirname(abspath(self.fname)) + "/" + f
+                data = self._load(include_fname)
+                self._json_parse(data, is_included=True)
 
     def _parse(self, data: str):
         # Try to parse the legacy format first, otherwise use the new JSON
         # format.
         try:
             self._legacy_parse(data)
-        except SyntaxError:
+        except SyntaxError as e:
             self._json_parse(data, is_included=False)
 
     def _remove_entry(self, config: str):
@@ -295,12 +298,16 @@ class Annotation(Config):
                 if "policy" in self.config[conf]:
                     # Add a TODO if a config with a note is changing and print
                     # a warning
-                    old_val = self.search_config(config=conf, arch=arch, flavour=flavour_arg)
+                    old_val = self.search_config(
+                        config=conf, arch=arch, flavour=flavour_arg
+                    )
                     if old_val:
                         old_val = old_val[conf]
                     if val != old_val and "note" in self.config[conf]:
-                        self.config[conf]['note'] = "TODO: update note"
-                        print(f"WARNING: {conf} changed from {old_val} to {val}, updating note")
+                        self.config[conf]["note"] = "TODO: update note"
+                        print(
+                            f"WARNING: {conf} changed from {old_val} to {val}, updating note"
+                        )
                     self.config[conf]["policy"][flavour] = val
                 else:
                     self.config[conf]["policy"] = {flavour: val}
