@@ -1,0 +1,40 @@
+# Use pyproject.toml to specify any non-standard command line args
+# - We use a sha1 rev to avoid labels getting moved unexpectedly
+# - Liberally provide file filters
+#   https://pre-commit.com/#filtering-files-with-types
+repos:
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: f71fa2c1f9cf5cb705f73dffe4b21f7c61470ba9 # v4.4.0
+  hooks:
+    # Validate Python syntax
+  - id: check-ast
+    types: [python]
+  - id: check-executables-have-shebangs
+  - id: check-shebang-scripts-are-executable
+  - id: check-symlinks
+  - id: check-toml
+  - id: check-yaml
+  - id: debug-statements
+    types: [python]
+  - id: end-of-file-fixer
+  - id: trailing-whitespace
+    types_or: [python, shell]
+- repo: https://github.com/psf/black
+  rev: bf7a16254ec96b084a6caf3d435ec18f0f245cc7 # 23.3.0
+  hooks:
+  - id: black
+    types: [python]
+- repo: https://github.com/astral-sh/ruff-pre-commit
+  rev: 14b59ee3b18bd49d0816d1f36820c97110e780cc # v0.0.270
+  hooks:
+  - id: ruff
+    types: [python]
+- repo: local
+  hooks:
+  - id: shellcheck
+    name: shellcheck
+    description: Test shell scripts with shellcheck
+    entry: shellcheck
+    language: python
+    types: [shell]
+    require_serial: true
