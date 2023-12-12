@@ -1,0 +1,9 @@
+# Menu: HEADER
+# FORMAT: 4
+# ARCH: arm64 armhf
+# FLAVOUR: arm64-raspi armhf-raspi
+# FLAVOUR_DEP: {'arm64-raspi': 'arm64-generic', 'armhf-raspi': 'armhf-generic-lpae'}
+
+include "annotations.override.2"
+
+CONFIG_SND_TRIDENT                              policy<{'arm64': '-', 'armhf': '-'}> note<'Pi specific (not availble on Pi)'>

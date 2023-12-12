@@ -1,0 +1,28 @@
+{
+  "arch": [
+    "arm64",
+    "armhf"
+  ],
+  "flavour": [
+    "arm64-raspi",
+    "armhf-raspi"
+  ],
+  "flavour_dep": {
+    "arm64-raspi": "arm64-generic",
+    "armhf-raspi": "armhf-generic-lpae"
+  },
+  "include": [
+    "annotations.override.2"
+  ],
+  "config": {
+    "CONFIG_SND_TRIDENT": {
+      "policy": {
+        "amd64": "m",
+        "i386": "m",
+        "arm64": "-",
+        "armhf": "-"
+      },
+      "note": "'Pi specific (not availble on Pi)'"
+    }
+  }
+}
