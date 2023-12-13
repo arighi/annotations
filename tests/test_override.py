@@ -10,6 +10,5 @@ class TestLoadAnnotations(unittest.TestCase):
         for d in ("annotations.override.1",):
             f = "tests/data/" + d
             a = Annotation(f)
-            print(utils.to_dict(a))
             r = utils.load_json(f + ".result")
             self.assertEqual(utils.to_dict(a), r)
