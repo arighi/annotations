@@ -2,7 +2,7 @@
 # version of annotations module
 # Copyright © 2022 Canonical Ltd.
 
-VERSION = "0.1"
+VERSION = "0.2"
 
 ANNOTATIONS_FORMAT_VERSION = 5
 

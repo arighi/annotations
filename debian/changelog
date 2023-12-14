@@ -1,3 +1,32 @@
+annotations (0.2-1) unstable; urgency=medium
+
+  * New upstream version v0.2:
+    - tests: test_override: drop unnecessary debugging print()
+    - tests: add a new unit test to verify the arch override
+    - annotations: properly update arch overrides
+    - annotations: move sys.dont_write_bytecode to main script
+    - annotations: coding style fixes
+    - add an 'sanitize' helper script
+    - pre-commit: add sanity checks
+    - annotations: clean up shebang
+    - annotations: properly update configs with included JSON files
+    - annotations: introduce --no-include
+    - annotations: support JSON format
+    - tests: add an include test case
+    - tests/test_todo_note: drop unnecessary debugging info
+    - add an 'annotations' helper script
+    - annotations: dump all the structure as JSON if no argument is specified
+    - tests: add tox configuration to automate unit testing
+    - tests: add some basic unit tests
+    - annotations: update: properly update note for arch-flavour configs
+    - annotations: update: update note when config is changing
+    - avoid generating python bytecode
+    - annotations: make the output of config-check more user-friendly
+    - annotations: make argcomplete optional
+    - ci: remove trailing space in pylint.yml
+
+ -- Andrea Righi <andrea.righi@canonical.com>  Thu, 14 Dec 2023 11:08:11 +0100
+
 annotations (0.1-1) unstable; urgency=medium
 
   * Initial packaging.
